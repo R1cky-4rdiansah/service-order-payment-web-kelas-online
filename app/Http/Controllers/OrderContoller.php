@@ -39,7 +39,7 @@ class OrderContoller extends Controller
 
         $countDataNow = Order::whereDate('created_at', $datenow)->orderBy('id')->count();
 
-        if ($countDataNow) {
+        if ($countDataNow > 0) {
             $order_id = str_replace("-", "", $datenow) . sprintf("%04s", $countDataNow + 1);
         } else {
             $order_id = str_replace("-", "", $datenow) . sprintf("%04s", 1);
