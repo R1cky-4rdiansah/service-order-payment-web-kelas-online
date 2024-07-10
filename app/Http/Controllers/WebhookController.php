@@ -27,7 +27,7 @@ class WebhookController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Signature key tidak valid'
-            ]);
+            ], 404);
         }
 
         $realIdCourse = substr($orderId, 12);
@@ -38,7 +38,7 @@ class WebhookController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Order telah sukses'
-            ]);
+            ], 409);
         }
 
         if ($transactionStatus == 'capture') {
@@ -70,12 +70,22 @@ class WebhookController extends Controller
             'raw_response' => json_encode($data)
         ];
 
-        $raw_response = PaymentLog::create($historyData);
+        PaymentLog::create($historyData);
 
         if ($order->status == 'success') {
+            $coursePremi = createCoursePremium([
+                "user_id" => $order->user_id,
+                "course_id" => $order->course_id
+            ]);
 
+            if ($coursePremi["status"] === "error") {
+                return response()->json([
+                    "status" => $coursePremi["status"],
+                    "message" => $coursePremi["message"]
+                ], $coursePremi["http_code"]);
+            }
         }
 
-        return "ok";
+        return response()->json("Ok");
     }
 }
